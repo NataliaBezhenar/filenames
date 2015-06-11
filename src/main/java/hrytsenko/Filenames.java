@@ -1,38 +1,75 @@
 package hrytsenko;
 
-
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.FileFileFilter;
 
+import com.google.common.base.Preconditions;
 
 /**
  * Utilities for working with filenames.
  */
 public final class Filenames {
-	
-    public static <T> T getLast(List<T> list) {
-        return list != null && !list.isEmpty() ? list.get(list.size() - 1) : null;
-    }
-	
-	public static int findNumbersInTheEndOfFilename(String filename){
+
+
+/**
+* Method containsBracketsWithNumber checks if filename contains construction "(number)"
+* returns boolean value
+* @param baseName
+*/
+	public static boolean containsBracketsWithNumber (String baseName){
 		
-		Integer ii=0;
-		Pattern pat = Pattern.compile("\\d+$");
-		Matcher matcher = pat.matcher(filename);
+		boolean b = false;
+		Pattern pat = Pattern.compile("\\s\\(\\d+\\)$");
+		Matcher matcher = pat.matcher(baseName);
+		if (matcher.find()){
+		b=true;}
+		
+		return b;
+	}
+	
+	/**
+	* Method findNumbersInTheEndOfFilename finds number of file's version
+	*@param baseName
+	* @return integer value of file version
+	*/
+	
+	public static int findNumbersInTheEndOfFilename(String baseName){
+		
+		Integer returnValue=0;
+		Pattern pat = Pattern.compile("\\s\\(\\d+\\)$");
+		Matcher matcher = pat.matcher(baseName);
 		if (matcher.find()){
 		String  i=matcher.group();
-		ii = Integer.parseInt(i);
+		i = i.replace(" (", "");
+		i=i.replace(")", "");
+		returnValue = Integer.parseInt(i);
 		}
-		return ii;
+		
+		return returnValue;
 	}
-
+	
+		/**
+	* Method findBaseNameWithoutNumber finds the part of base filename before it's number
+	*@param baseName
+	* @return String value of filename without number
+	*/
+	
+	public static String findBaseNameWithoutNumber(String baseName){
+        
+		String baseNameWithoutNumbers="";
+		Pattern pat = Pattern.compile("\\s\\(\\d+\\)$");
+		Matcher matcher = pat.matcher(baseName);
+		if (matcher.find()){
+		String  i=matcher.group();
+		baseNameWithoutNumbers = baseName.replace(i, "");}
+		return baseNameWithoutNumbers;
+	}
+	
     /**
      * Generates the unique name to avoid duplication with the known names.
      * 
@@ -50,44 +87,74 @@ public final class Filenames {
      */
     public static String generateUniqueName(String originalName, List<String> knownNames) {
         //throw new UnsupportedOperationException("Not implemented.");
+    	String finalName="";
     	
-        String filename=""; 
-    
+    	
+    	Preconditions.checkArgument((!originalName.isEmpty()), "Original name is empty");
+    	Preconditions.checkNotNull(originalName, "Original name is null");
+    	
+    	if (knownNames.isEmpty()) {
+    		finalName = originalName;
+    	}
+    	
+    	
+    	if (!knownNames.contains(originalName)) {
+    		finalName = originalName;
+    	}
+    	
+    	if(knownNames.contains(originalName)){
+    		
+    		String baseName = FilenameUtils.getBaseName(originalName);
+    		String extention = FilenameUtils.getExtension(originalName);
+    		
+    		String baseNameWithoutNumber=findBaseNameWithoutNumber(baseName);
+    		int numberInBaseName = findNumbersInTheEndOfFilename(baseName);
+    		
+    		
+    		List <Integer> listWithFilesNumbers = new LinkedList <Integer>();
+    		for (String s: knownNames){
+    			listWithFilesNumbers.add(findNumbersInTheEndOfFilename(s));
+    		}
+    		Collections.sort(listWithFilesNumbers);
+    		
+			
+			
+    		if (containsBracketsWithNumber(baseName)){
+ 		
+    		if (listWithFilesNumbers.contains(numberInBaseName)){
+    			for (int i=0;;i++){
+    				numberInBaseName=numberInBaseName+i;
+    				if (listWithFilesNumbers.contains(numberInBaseName)) {continue;}
+    				if (!listWithFilesNumbers.contains(numberInBaseName)) {break;}
+    			}
+    		}
+    		
 
+    		finalName = baseNameWithoutNumber+" ("+numberInBaseName+")."+extention;
 
-
-        if (knownNames.contains(originalName))
-         {
-        	 Integer fileNumber = findNumbersInTheEndOfFilename(originalName);
-             String baseName = FilenameUtils.getBaseName(originalName);
-             String extention = FilenameUtils.getExtension(originalName);
-             Integer NewIndex=0;
-             List<Integer> listOfIndexes = new ArrayList<Integer>();
-             
-             
-             File f = new File(".");
-             String[] files = f.list( FileFileFilter.FILE );
-             for (String s:files){
-            	 FilenameUtils.getBaseName(s);
-            	 listOfIndexes.add(findNumbersInTheEndOfFilename(s));
-            	 
-             }
-             Collections.sort(listOfIndexes);
-             for(Integer i:listOfIndexes){
-             if (i.equals(fileNumber)){
-            	 NewIndex=getLast(listOfIndexes)+1;
-             }
-             filename=baseName+NewIndex+"."+extention;
-            	 }
-        }
-       
-        else filename=originalName;
-     
-        
-       return filename;
-     
-      
-    			
+    		}
+    	
+    	if (!containsBracketsWithNumber(baseName)){
+    		
+    		for (int i=0;i<listWithFilesNumbers.size();i++){
+    		Integer iterEl=listWithFilesNumbers.get(i);
+    		if (iterEl == i){
+    			continue;
+    		}
+    		else {
+    			numberInBaseName=i;
+    			break;
+    		}
+    		}
+    	
+    		finalName = baseName+" ("+numberInBaseName+")."+extention;
+    	
+    	}	
+    	}
+    	
+    	return finalName;
+    	
+    	
     }
 
     private Filenames() {

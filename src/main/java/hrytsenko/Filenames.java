@@ -1,5 +1,6 @@
 package hrytsenko;
 
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -124,7 +125,7 @@ public final class Filenames {
 		}
 		
 		
-		
+	
 		
 		if (knownNames.contains(originalName))
 		{		
@@ -139,7 +140,7 @@ public final class Filenames {
 		
 		if (!containsBracketsWithNumber(baseName)){
 			
-			Integer currentFileNumber =1;
+			Integer currentFileNumber =Collections.max(listWithFilesNumbers);
 			while (listWithFilesNumbers.contains(currentFileNumber)) ++currentFileNumber;
 			
 			
@@ -149,7 +150,7 @@ public final class Filenames {
 		}
 		
     	return finalName;
-    	
+		
     	
     }
 

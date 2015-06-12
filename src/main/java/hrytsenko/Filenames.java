@@ -15,12 +15,12 @@ import com.google.common.base.Preconditions;
  */
 public final class Filenames {
 
-
-/**
-* Method containsBracketsWithNumber checks if filename contains construction "(number)"
-* returns boolean value
-* @param baseName
-*/
+	
+	/**
+	* Method containsBracketsWithNumber checks if filename contains construction "(number)"
+	* returns boolean value
+	* @param baseName
+	*/
 	public static boolean containsBracketsWithNumber (String baseName){
 		
 		boolean b = false;
@@ -31,6 +31,7 @@ public final class Filenames {
 		
 		return b;
 	}
+	
 	
 	/**
 	* Method findNumbersInTheEndOfFilename finds number of file's version
@@ -50,15 +51,16 @@ public final class Filenames {
 		returnValue = Integer.parseInt(i);
 		}
 		
+
 		return returnValue;
 	}
 	
-		/**
-	* Method findBaseNameWithoutNumber finds the part of base filename before it's number
-	*@param baseName
-	* @return String value of filename without number
-	*/
 	
+/**
+* Method findBaseNameWithoutNumber finds the part of base filename before it's number
+*@param baseName
+* @return String value of filename without number
+*/
 	public static String findBaseNameWithoutNumber(String baseName){
         
 		String baseNameWithoutNumbers="";
@@ -102,56 +104,50 @@ public final class Filenames {
     		finalName = originalName;
     	}
     	
-    	if(knownNames.contains(originalName)){
-    		
-    		String baseName = FilenameUtils.getBaseName(originalName);
-    		String extention = FilenameUtils.getExtension(originalName);
-    		
-    		String baseNameWithoutNumber=findBaseNameWithoutNumber(baseName);
-    		int numberInBaseName = findNumbersInTheEndOfFilename(baseName);
-    		
-    		
-    		List <Integer> listWithFilesNumbers = new LinkedList <Integer>();
-    		for (String s: knownNames){
-    			listWithFilesNumbers.add(findNumbersInTheEndOfFilename(s));
-    		}
-    		Collections.sort(listWithFilesNumbers);
-    		
+    	String baseName = FilenameUtils.getBaseName(originalName);
+		String extention = FilenameUtils.getExtension(originalName);
+		
+		String baseNameWithoutNumber=findBaseNameWithoutNumber(baseName);
+    	
+		
+		//create List with basenames
+		List <String> listWithbaseNames = new LinkedList <String>();
+		for (String s:knownNames){
+			listWithbaseNames.add(FilenameUtils.getBaseName(s));
+		}
+		
+		
+		//create List with file numbers
+		List <Integer> listWithFilesNumbers = new LinkedList <Integer>();
+		for (String s: listWithbaseNames){
+			listWithFilesNumbers.add(findNumbersInTheEndOfFilename(s));
+		}
+		
+		
+		
+		
+		if (knownNames.contains(originalName))
+		{		
+			if (containsBracketsWithNumber(baseName)){
+		
+		Integer currentFileNumber = findNumbersInTheEndOfFilename(baseName);
+		while (listWithFilesNumbers.contains(currentFileNumber)) ++currentFileNumber;
+		finalName =  baseNameWithoutNumber+" ("+currentFileNumber+")."+extention;
+		}
+		
+		
+		
+		if (!containsBracketsWithNumber(baseName)){
+			
+			Integer currentFileNumber =1;
+			while (listWithFilesNumbers.contains(currentFileNumber)) ++currentFileNumber;
 			
 			
-    		if (containsBracketsWithNumber(baseName)){
- 		
-    		if (listWithFilesNumbers.contains(numberInBaseName)){
-    			for (int i=0;;i++){
-    				numberInBaseName=numberInBaseName+i;
-    				if (listWithFilesNumbers.contains(numberInBaseName)) {continue;}
-    				if (!listWithFilesNumbers.contains(numberInBaseName)) {break;}
-    			}
-    		}
-    		
-
-    		finalName = baseNameWithoutNumber+" ("+numberInBaseName+")."+extention;
-
-    		}
-    	
-    	if (!containsBracketsWithNumber(baseName)){
-    		
-    		for (int i=0;i<listWithFilesNumbers.size();i++){
-    		Integer iterEl=listWithFilesNumbers.get(i);
-    		if (iterEl == i){
-    			continue;
-    		}
-    		else {
-    			numberInBaseName=i;
-    			break;
-    		}
-    		}
-    	
-    		finalName = baseName+" ("+numberInBaseName+")."+extention;
-    	
-    	}	
-    	}
-    	
+			finalName =  baseName+" ("+currentFileNumber+")."+extention;
+		}
+		
+		}
+		
     	return finalName;
     	
     	

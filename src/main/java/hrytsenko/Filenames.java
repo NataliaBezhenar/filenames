@@ -9,18 +9,19 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
  * Utilities for working with filenames.
  */
 public final class Filenames {
-	
-	static Matcher getMatch (String baseName){
-		 Matcher matcher = Pattern.compile("\\s\\(\\d+\\)$").matcher(baseName);
-		 return matcher;
+
+	static Matcher getMatch(String baseName) {
+		Matcher matcher = Pattern.compile("\\s\\(\\d+\\)$").matcher(baseName);
+		return matcher;
 	}
 
-	public static boolean isMatchesParenthesesWithNumber(String baseName) {
+	public static boolean isMatchesParentheses(String baseName) {
 
 		boolean b = false;
 		Matcher matcher = getMatch(baseName);
@@ -88,11 +89,8 @@ public final class Filenames {
 
 		String baseName = FilenameUtils.getBaseName(originalName);
 		String extention = FilenameUtils.getExtension(originalName);
-		if (extention.isEmpty()) {
-			System.out
-					.println("File without extention, try to enter filename once more time");
-			generateUniqueName(originalName, knownNames);
-		}
+		Preconditions.checkState(!Strings.isNullOrEmpty(extention),
+				"File without extention");
 
 		LinkedList<String> listWithbaseNames = new LinkedList<>();
 		for (String s : knownNames) {
@@ -105,7 +103,7 @@ public final class Filenames {
 		}
 
 		if (knownNames.contains(originalName)) {
-			if (isMatchesParenthesesWithNumber(baseName)) {
+			if (isMatchesParentheses(baseName)) {
 
 				Integer currentFileNumber = getNumbers(baseName);
 				while (listWithFilesNumbers.contains(currentFileNumber))
